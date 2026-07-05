@@ -5,19 +5,26 @@ on:
     branches: [ master ]
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          FOLDERS=$(find . -maxdepth 2 -name "package.json" -exec dirname {} \; | cut -c3- | jq -R . | jq -s -c .)
+          echo "matrix=$FOLDERS" >> $GITHUB_OUTPUT
+
   test-and-build:
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        folder: 
-          - 'LDJS-Back-end-Automatisez-les-tests-et-le-release-continus-avec-Docker'
-          - 'LDJS-Front-end-Automatisez-les-tests-et-le-release-continus-avec-Docker'
+        folder: ${{ fromJson(needs.setup.outputs.matrix) }}
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,8 +46,7 @@ jobs:
       - name: Build and Push
         working-directory: ${{ matrix.folder }}
         run: |
-          FOLDER_NAME=$(echo "${{ matrix.folder }}" | tr '[:upper:]' '[:lower:]')
+          FOLDER_NAME=$(basename "${{ matrix.folder }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_NAME=webdevoo/$FOLDER_NAME:${{ github.sha }}
-          
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
