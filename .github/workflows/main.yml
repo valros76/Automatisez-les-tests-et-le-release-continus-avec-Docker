@@ -37,6 +37,9 @@ jobs:
       - name: Build and Push
         working-directory: ${{ matrix.folder }}
         run: |
-          IMAGE_NAME=webdevoo/app-image:${{ github.sha }}
+          # Utilise le nom du dossier comme nom d'image distinct (ex: webdevoo/frontend:sha)
+          # 'matrix.folder' contient maintenant "backend" ou "frontend"
+          IMAGE_NAME=webdevoo/${{ matrix.folder }}:${{ github.sha }}
+          
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
