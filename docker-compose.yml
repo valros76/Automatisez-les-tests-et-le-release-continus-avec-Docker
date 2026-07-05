@@ -9,7 +9,7 @@ services:
       - app-network
 
   backend:
-    build: ./LDJS-Back-end-Automatisez-les-tests-et-le-release-continus-avec-Docker
+    build: ./backend
     ports:
       - "3000:3000"
     environment:
@@ -23,7 +23,7 @@ services:
       - app-network
 
   frontend:
-    build: ./LDJS-Front-end-Automatisez-les-tests-et-le-release-continus-avec-Docker
+    build: ./frontend
     ports:
       - "80:80"
     depends_on:
