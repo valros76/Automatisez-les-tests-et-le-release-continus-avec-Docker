@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
 
 jobs:
   test-and-build:
@@ -37,9 +37,32 @@ jobs:
       - name: Build and Push
         working-directory: ${{ matrix.folder }}
         run: |
-          # Utilise le nom du dossier comme nom d'image distinct (ex: webdevoo/frontend:sha)
-          # 'matrix.folder' contient maintenant "backend" ou "frontend"
           IMAGE_NAME=webdevoo/${{ matrix.folder }}:${{ github.sha }}
-          
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
+
+  release:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
