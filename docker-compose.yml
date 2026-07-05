@@ -5,6 +5,8 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - app-network
 
   backend:
     build: ./LDJS-Back-end-Automatisez-les-tests-et-le-release-continus-avec-Docker
@@ -17,6 +19,8 @@ services:
       - CORS_ORIGIN=http://localhost
     depends_on:
       - mongodb
+    networks:
+      - app-network
 
   frontend:
     build: ./LDJS-Front-end-Automatisez-les-tests-et-le-release-continus-avec-Docker
@@ -24,6 +28,12 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   mongo-data:
