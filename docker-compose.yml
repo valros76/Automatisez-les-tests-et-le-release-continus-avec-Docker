@@ -22,6 +22,8 @@ services:
     build: ./LDJS-Front-end-Automatisez-les-tests-et-le-release-continus-avec-Docker
     ports:
       - "80:80"
+    depends_on:
+      - backend
 
 volumes:
   mongo-data:
