@@ -1,24 +1,32 @@
-# Nestjs specific
-/dist
-/node_modules
-/build
-/tmp
+# --- Dépendances ---
+**/node_modules/
 
-# Logs
-logs
+# --- Build & Sorties ---
+**/dist/
+**/build/
+**/out/
+
+# --- Logs ---
 *.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+*.tsbuildinfo
 
-# dotenv environment variable files
+# --- Environnement ---
 .env
-.env.development
-.env.test
-.env.production
+.env.*
+!.env.example
 
-# temp directory
-.temp
-.tmp
+# --- Système / Éditeurs ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Docker & Divers ---
+.temp/
+.tmp/
+docker-compose.override.yml
