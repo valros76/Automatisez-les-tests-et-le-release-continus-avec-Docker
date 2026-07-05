@@ -14,12 +14,15 @@ jobs:
           - 'LDJS-Front-end-Automatisez-les-tests-et-le-release-continus-avec-Docker'
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install and Test
         working-directory: ${{ matrix.folder }}
@@ -36,6 +39,8 @@ jobs:
       - name: Build and Push
         working-directory: ${{ matrix.folder }}
         run: |
-          IMAGE_NAME=webdevoo/${{ matrix.folder }}:${{ github.sha }}
+          FOLDER_NAME=$(echo "${{ matrix.folder }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_NAME=webdevoo/$FOLDER_NAME:${{ github.sha }}
+          
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
