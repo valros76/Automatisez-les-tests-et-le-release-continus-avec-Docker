@@ -5,28 +5,38 @@ on:
     branches: [ master, dev ]
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         folder: ['backend', 'frontend']
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install and Test
         working-directory: ${{ matrix.folder }}
         run: |
-          npm install
+          npm ci
           npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    strategy:
+      matrix:
+        folder: ['backend', 'frontend']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -37,13 +47,14 @@ jobs:
       - name: Build and Push
         working-directory: ${{ matrix.folder }}
         run: |
-          IMAGE_NAME=webdevoo/${{ matrix.folder }}:${{ github.sha }}
+          IMAGE_NAME=webdevoo/${{ matrix.folder }}:${{ github.ref_name }}
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
   release:
-    needs: test-and-build
+    needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: write
       issues: write
@@ -51,15 +62,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # Utilisation de l'astuce npx -p pour charger les plugins sans package.json à la racine
       - name: Semantic Release
         run: npx -p semantic-release -p @semantic-release/commit-analyzer -p @semantic-release/release-notes-generator -p @semantic-release/changelog -p @semantic-release/git -p @semantic-release/github semantic-release
         env:
